@@ -58,6 +58,13 @@ int idOstatniegoAdresata() {
     return ostatnieId;
 }
 
+void tworzeniePlikuTymczasowego ()
+{
+    ifstream f1( "ksiazka_adresowa.txt" );
+    ofstream f2( "ksiazka_adresowa_temp.txt", ios::trunc );
+    f2 << f1.rdbuf();
+}
+
 void zapiszDoPlikuUzytkownicy () {
 
     fstream plik;
@@ -75,23 +82,7 @@ void zapiszDoPlikuKsiazkaAdresowa () {
 
     fstream plik;
     plik.open ("ksiazka_adresowa.txt", ios::out|ios::trunc);
-    if (plik.good()) {
-        for (int i = 0; i < znajomi.size(); i++) {
-            plik << znajomi[i].idAdresata << "|";
-            plik << znajomi[i].idUzytkownika << "|";
-            plik << znajomi[i].imie << "|";
-            plik << znajomi[i].nazwisko << "|";
-            plik << znajomi[i].nrtelefonu << "|";
-            plik << znajomi[i].email << "|";
-            plik << znajomi[i].adres << "|" << endl;
-        }
-        plik.close();
-    }
-}
-void zapiszDoPlikuTymczasowego () {
 
-    fstream plik;
-    plik.open ("ksiazka_adresowa_tymczasowy.txt", ios::out|ios::trunc);
     if (plik.good()) {
         for (int i = 0; i < znajomi.size(); i++) {
             plik << znajomi[i].idAdresata << "|";
@@ -105,8 +96,10 @@ void zapiszDoPlikuTymczasowego () {
         plik.close();
     }
 }
+
+
 void usunPlikTymczasowy () {
-    if (remove ("ksiazka_adresowa_tymczasowy.txt") == 0 )
+    if (remove ("ksiazka_adresowa_temp.txt") == 0 )
         cout << "Plik usuniety" << endl;
     else
         cout << "Wystapil blad podczas usuwania pliku" << endl;
@@ -230,6 +223,7 @@ void wyswietlwszystkie (int idZalogowanegoUzytkownika) {
     }
     getch();
 }
+
 
 void wczytajosobyzplikuUzytkownicy () {
     fstream plik;
@@ -435,6 +429,8 @@ int main() {
 
 
     wczytajosobyzplikuUzytkownicy();
+    tworzeniePlikuTymczasowego();
+
     int idZalogowanegoUzytkownika = 0;
     int iloscUzytkownikow = uzytkownicy.size();
     int iloscznajomych = znajomi.size();
