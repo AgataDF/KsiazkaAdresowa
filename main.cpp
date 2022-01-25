@@ -9,7 +9,8 @@
 using namespace std;
 
 struct Znajomy {
-    int id;
+    int idAdresata;
+    int idUzytkownika;
     string imie, nazwisko, nrtelefonu, email, adres;
 };
 
@@ -21,55 +22,96 @@ struct Uzytkownik {
 vector <Uzytkownik> uzytkownicy;
 vector <Znajomy> znajomi;
 
+int zliczanieLiniiPliku() {
+    int ileLinii = 0;
+    string linia;
+    char znak = '|';
+    ifstream myfile("ksiazka_adresowa.txt");
+    if(myfile.is_open()) {
+        while(!myfile.eof()) {
+            getline(myfile, linia, znak);
+            ileLinii++;
+        }
+        myfile.close();
+    return ileLinii;
+}
+}
 
-
-
-int idOstatniegoAdresata()
-{
-    int ostatnieId;
-    if (znajomi.size() > 0)
-    {
-        int i = znajomi.size();
-        ostatnieId = znajomi[i].id;
+int idOstatniegoAdresata() {
+    int ostatnieId, pomoc ;
+    int i = zliczanieLiniiPliku()-6; //pozycja ostatniego id adresata
+    fstream plik;
+    plik.open ("ksiazka_adresowa.txt", ios::in);
+    if (plik.good()){
+    int nrlinii = 1;
+    string linia;
+    char znak = '|';
+    while(getline(plik, linia, znak)) {
+        nrlinii++;
+        if (nrlinii == i)
+        {
+            ostatnieId = atoi(linia.c_str());
+        }
     }
-    else
-        ostatnieId = 0;
+    }
+    plik.close();
     return ostatnieId;
 }
-void zapiszDoPlikuUzytkownicy ()
-{
+
+void zapiszDoPlikuUzytkownicy () {
 
     fstream plik;
     plik.open ("uzytkownicy.txt", ios::out|ios::trunc);
     if (plik.good()) {
-        for (int i = 0; i < uzytkownicy.size(); i++)
-        {
-        plik << uzytkownicy[i].id << "|";
-        plik << uzytkownicy[i].nazwa << "|";
-        plik << uzytkownicy[i].haslo << "|" << endl;
+        for (int i = 0; i < uzytkownicy.size(); i++) {
+            plik << uzytkownicy[i].id << "|";
+            plik << uzytkownicy[i].nazwa << "|";
+            plik << uzytkownicy[i].haslo << "|" << endl;
         }
         plik.close();
+    }
 }
-}
-void zapiszDoPlikuKsiazkaAdresowa (int idZalogowanegoUzytkownika)
-{
+void zapiszDoPlikuKsiazkaAdresowa () {
 
     fstream plik;
     plik.open ("ksiazka_adresowa.txt", ios::out|ios::trunc);
     if (plik.good()) {
-        for (int i = 0; i < znajomi.size(); i++)
-        {
-        plik << znajomi[i].id << "|";
-        plik << idZalogowanegoUzytkownika << "|";
-        plik << znajomi[i].imie << "|";
-        plik << znajomi[i].nazwisko << "|";
-        plik << znajomi[i].nrtelefonu << "|";
-        plik << znajomi[i].email << "|";
-        plik << znajomi[i].adres << "|" << endl;
+        for (int i = 0; i < znajomi.size(); i++) {
+            plik << znajomi[i].idAdresata << "|";
+            plik << znajomi[i].idUzytkownika << "|";
+            plik << znajomi[i].imie << "|";
+            plik << znajomi[i].nazwisko << "|";
+            plik << znajomi[i].nrtelefonu << "|";
+            plik << znajomi[i].email << "|";
+            plik << znajomi[i].adres << "|" << endl;
         }
         plik.close();
-}
     }
+}
+void zapiszDoPlikuTymczasowego () {
+
+    fstream plik;
+    plik.open ("ksiazka_adresowa_tymczasowy.txt", ios::out|ios::trunc);
+    if (plik.good()) {
+        for (int i = 0; i < znajomi.size(); i++) {
+            plik << znajomi[i].idAdresata << "|";
+            plik << znajomi[i].idUzytkownika << "|";
+            plik << znajomi[i].imie << "|";
+            plik << znajomi[i].nazwisko << "|";
+            plik << znajomi[i].nrtelefonu << "|";
+            plik << znajomi[i].email << "|";
+            plik << znajomi[i].adres << "|" << endl;
+        }
+        plik.close();
+    }
+}
+void usunPlikTymczasowy () {
+    if (remove ("ksiazka_adresowa_tymczasowy.txt") == 0 )
+        cout << "Plik usuniety" << endl;
+    else
+        cout << "Wystapil blad podczas usuwania pliku" << endl;
+}
+
 int rejestracja (int iloscUzytkownikow) {
     Uzytkownik pomoc;
     cout << "Podaj nazwe uzytkownika: ";
@@ -97,7 +139,7 @@ int rejestracja (int iloscUzytkownikow) {
 
         plik.close();
 
-    } else{
+    } else {
         cout << "Nie mozna otworzyc pliku txt";
         Sleep(1000);
     }
@@ -105,27 +147,24 @@ int rejestracja (int iloscUzytkownikow) {
     Sleep(1000);
     return iloscUzytkownikow+1;
 }
-
-int logowanie (int iloscUzytkownikow)
-{
+int logowanie (int iloscUzytkownikow) {
     string nazwa, haslo;
     cout << "Podaj nazwe uzytkownika: ";
     cin >> nazwa;
     int i = 0;
     while (i < iloscUzytkownikow) {
         if (uzytkownicy[i].nazwa == nazwa) {
-            for (int proby = 0; proby < 3; proby++)
-            {
+            for (int proby = 0; proby < 3; proby++) {
                 cout << "Podaj haslo. Pozostalo prob " << 3-proby << " : ";
-            cin >> haslo;
-            if (uzytkownicy[i].haslo == haslo)
-            {
-                cout << "Zalogowano." << endl;
-                Sleep (1000);
-                return uzytkownicy[i].id;
-            }
+                cin >> haslo;
+                if (uzytkownicy[i].haslo == haslo) {
+                    cout << "Zalogowano." << endl;
+                    Sleep (1000);
+                    return uzytkownicy[i].id;
+                }
 
-            }cout << "Bledne haslo, poczekaj 3 s." << endl;
+            }
+            cout << "Bledne haslo, poczekaj 3 s." << endl;
             Sleep(3000);
             return 0;
 
@@ -137,6 +176,8 @@ int logowanie (int iloscUzytkownikow)
     return 0;
 }
 int dodajkontakt (int iloscZnajomych, int idZalogowanegoUzytkownika) {
+    int ostatnieId = idOstatniegoAdresata();
+
     Znajomy pomoc;
     cout << "Podaj imie: ";
     cin >> pomoc.imie;
@@ -149,15 +190,16 @@ int dodajkontakt (int iloscZnajomych, int idZalogowanegoUzytkownika) {
     cout << "Podaj swoj adres zamieszkania: ";
     cin >> pomoc.adres;
 
-    pomoc.id = idOstatniegoAdresata()+1;
+    pomoc.idAdresata = ostatnieId +1;
+    pomoc.idUzytkownika = idZalogowanegoUzytkownika;
 
     znajomi.push_back(pomoc);
 
     fstream plik;
     plik.open ("ksiazka_adresowa.txt", ios::out|ios::app);
     if (plik.good()) {
-        plik << pomoc.id << "|";
-        plik << idZalogowanegoUzytkownika << "|";
+        plik << pomoc.idAdresata << "|";
+        plik << pomoc.idUzytkownika << "|";
         plik << pomoc.imie << "|";
         plik << pomoc.nazwisko << "|";
         plik << pomoc.nrtelefonu << "|";
@@ -167,7 +209,7 @@ int dodajkontakt (int iloscZnajomych, int idZalogowanegoUzytkownika) {
         plik.close();
         cout << "Dodano kontakt do bazy danych";
         Sleep(1000);
-    } else{
+    } else {
         cout << "Nie mozna otworzyc pliku txt";
         Sleep(1000);
     }
@@ -177,7 +219,8 @@ int dodajkontakt (int iloscZnajomych, int idZalogowanegoUzytkownika) {
 void wyswietlwszystkie (int idZalogowanegoUzytkownika) {
     for (int i = 0; i < znajomi.size(); i++) {
         {
-            cout << znajomi[i].id << "|";
+            cout << znajomi[i].idAdresata << "|";
+            cout << znajomi[i].idUzytkownika << "|";
             cout << znajomi[i].imie << "|";
             cout << znajomi[i].nazwisko << "|";
             cout << znajomi[i].nrtelefonu << "|";
@@ -187,6 +230,7 @@ void wyswietlwszystkie (int idZalogowanegoUzytkownika) {
     }
     getch();
 }
+
 void wczytajosobyzplikuUzytkownicy () {
     fstream plik;
     plik.open ("uzytkownicy.txt", ios::in);
@@ -207,13 +251,13 @@ void wczytajosobyzplikuUzytkownicy () {
             nrlinii = 0;
             uzytkownicy.push_back(pomoc);
 
-        break;
+            break;
         }
         nrlinii++;
     }
     plik.close();
 }
-void wczytajosobyzplikuKsiazkaAdresowa () {
+void wczytajosobyzplikuKsiazkaAdresowa (int idZalogowanegoUzytkownika) {
     fstream plik;
     plik.open ("ksiazka_adresowa.txt", ios::in);
     int nrlinii = 1;
@@ -223,8 +267,12 @@ void wczytajosobyzplikuKsiazkaAdresowa () {
     while(getline(plik, linia, znak)) {
         switch(nrlinii) {
         case 1:
-            pomoc.id = atoi(linia.c_str());
-            nrlinii++;
+            pomoc.idAdresata = atoi(linia.c_str());
+            break;
+        case 2:
+            pomoc.idUzytkownika = atoi(linia.c_str());
+            if (pomoc.idUzytkownika != idZalogowanegoUzytkownika)
+                nrlinii=0;
             break;
         case 3:
             pomoc.imie = linia;
@@ -256,42 +304,38 @@ void wyszukajpoimieniu (int idZalogowanegoUzytkownika) {
     cin>>imieSzukane;
     for (int i = 0; i < znajomi.size(); i++) {
         if(znajomi[i].imie == imieSzukane) {
-            cout << znajomi[i].id << endl;
-            cout << znajomi[i].imie << endl;
-            cout << znajomi[i].nazwisko << endl;
-            cout << znajomi[i].nrtelefonu << endl;
-            cout << znajomi[i].email << endl;
+            cout << znajomi[i].idAdresata << "|";
+            cout << znajomi[i].imie << "|";
+            cout << znajomi[i].nazwisko << "|";
+            cout << znajomi[i].nrtelefonu << "|";
+            cout << znajomi[i].email << "|";
             cout << znajomi[i].adres << endl;
         }
     }
     getch();
 }
-
 void wyszukajponazwisku (int idZalogowanegoUzytkownika) {
     string nazwiskoSzukane;
     cout<<"Wpisz nazwisko, ktorego szukasz: ";
     cin>>nazwiskoSzukane;
     for (int i = 0; i < znajomi.size(); i++) {
         if(znajomi[i].nazwisko == nazwiskoSzukane) {
-            cout << znajomi[i].id << endl;
-            cout << znajomi[i].imie << endl;
-            cout << znajomi[i].nazwisko << endl;
-            cout << znajomi[i].nrtelefonu << endl;
-            cout << znajomi[i].email << endl;
+            cout << znajomi[i].idAdresata << "|";
+            cout << znajomi[i].imie << "|";
+            cout << znajomi[i].nazwisko << "|";
+            cout << znajomi[i].nrtelefonu << "|";
+            cout << znajomi[i].email << "|";
             cout << znajomi[i].adres << endl;
         }
     }
     getch();
 }
-void zmianaHasla(int iloscUzytkownikow, int idZalogowanegoUzytkownika)
-{
+void zmianaHasla(int iloscUzytkownikow, int idZalogowanegoUzytkownika) {
     string haslo;
     cout << "Podaj nowe haslo: ";
     cin >> haslo;
-    for (int i = 0; i < iloscUzytkownikow; i++)
-    {
-        if (uzytkownicy[i].id == idZalogowanegoUzytkownika)
-        {
+    for (int i = 0; i < iloscUzytkownikow; i++) {
+        if (uzytkownicy[i].id == idZalogowanegoUzytkownika) {
             uzytkownicy[i].haslo = haslo;
             zapiszDoPlikuUzytkownicy();
             cout << "Haso zostalo zmienione." << endl;
@@ -302,91 +346,94 @@ void zmianaHasla(int iloscUzytkownikow, int idZalogowanegoUzytkownika)
 void edytujImie (int numerId, int idZalogowanegoUzytkownika) {
     string noweImie;
     for (int i = 0; i < znajomi.size(); i++) {
-        if(znajomi[i].id == numerId) {
+        if(znajomi[i].idAdresata == numerId) {
             cout << "Podaj nowe imie: ";
             cin >> noweImie;
             znajomi[i].imie = noweImie;
-            zapiszDoPlikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+            zapiszDoPlikuKsiazkaAdresowa();
             cout << "Zmieniono imie";
         }
-    }Sleep(1000);
+    }
+    Sleep(1000);
 }
 void edytujNazwisko (int numerId, int idZalogowanegoUzytkownika) {
     string noweNazwisko;
     for (int i = 0; i < znajomi.size(); i++) {
-        if(znajomi[i].id == numerId) {
+        if(znajomi[i].idAdresata == numerId) {
             cout << "Podaj nowe nazwisko: ";
             cin >> noweNazwisko;
             znajomi[i].nazwisko = noweNazwisko;
-            zapiszDoPlikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+            zapiszDoPlikuKsiazkaAdresowa();
             cout << "Zmieniono nazwisko";
         }
 
-    }Sleep(1000);
+    }
+    Sleep(1000);
 }
 void edytujNrTelefonu (int numerId, int idZalogowanegoUzytkownika) {
     string nowyNrTelefonu;
     for (int i = 0; i < znajomi.size(); i++) {
-        if(znajomi[i].id == numerId) {
+        if(znajomi[i].idAdresata == numerId) {
             cout << "Podaj nowy adres: ";
             cin >> nowyNrTelefonu;
             znajomi[i].nrtelefonu = nowyNrTelefonu;
-            zapiszDoPlikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+            zapiszDoPlikuKsiazkaAdresowa();
             cout << "Zmieniono adres";
         }
 
-    }Sleep(1000);
+    }
+    Sleep(1000);
 }
 void edytujEmail (int numerId, int idZalogowanegoUzytkownika) {
     string nowyEmail;
     for (int i = 0; i < znajomi.size(); i++) {
-        if(znajomi[i].id == numerId) {
+        if(znajomi[i].idAdresata == numerId) {
             cout << "Podaj nowy email: ";
             cin >> nowyEmail;
             znajomi[i].email = nowyEmail;
-            zapiszDoPlikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+            zapiszDoPlikuKsiazkaAdresowa();
             cout << "Zmieniono email";
         }
 
-    } Sleep(1000);
+    }
+    Sleep(1000);
 }
 void edytujAdres (int numerId, int idZalogowanegoUzytkownika) {
     string nowyAdres;
     for (int i = 0; i < znajomi.size(); i++) {
-        if(znajomi[i].id == numerId) {
+        if(znajomi[i].idAdresata == numerId) {
             cout << "Podaj nowy adres: ";
             cin >> nowyAdres;
             znajomi[i].adres = nowyAdres;
-            zapiszDoPlikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+            zapiszDoPlikuKsiazkaAdresowa();
             cout << "Zmieniono adres";
         }
 
-    }Sleep(1000);
+    }
+    Sleep(1000);
 }
 void usuniecieKontaktu (int numerId, int idZalogowanegoUzytkownika) {
     int iloscZnajomych = znajomi.size();
     for (auto itr = znajomi.begin(); itr != znajomi.end(); ++itr) {
-        if (itr -> id == numerId) {
+        if (itr -> idAdresata == numerId) {
             cout << "Czy na pewno chcesz usunac kontakt? Wcisnij t. ";
             char potwierdzenie;
             cin >> potwierdzenie;
-            if (potwierdzenie == 't')
-            {
+            if (potwierdzenie == 't') {
                 znajomi.erase(itr);
-                zapiszDoPlikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+                zapiszDoPlikuKsiazkaAdresowa();
                 cout << "Kontakt usuniety.";
                 break;
             }
         }
     }
-Sleep(1000);
+    Sleep(1000);
 }
-
 
 int main() {
     char wybor;
 
-    wczytajosobyzplikuKsiazkaAdresowa();
+
     wczytajosobyzplikuUzytkownicy();
     int idZalogowanegoUzytkownika = 0;
     int iloscUzytkownikow = uzytkownicy.size();
@@ -395,23 +442,29 @@ int main() {
     int idUsuniecie;
 
     while (1) {
-        if (idZalogowanegoUzytkownika ==0)
-            {
-                system("cls");
-        cout << "1. Rejestracja" << endl;
-        cout << "2. Logowanie" << endl;
-        cout << "9. Zakoncz program" << endl;
-        wybor = getch();
-        if (wybor == '1') {
-            iloscUzytkownikow = rejestracja(iloscUzytkownikow);
-        } else if (wybor == '2') {
-            idZalogowanegoUzytkownika = logowanie(iloscUzytkownikow);
-        } else if (wybor == '9') {
-            exit(0);
-        }
-            }
-          else if ((idKontaktu == 0)&&(idZalogowanegoUzytkownika !=0)) {
+        if (idZalogowanegoUzytkownika ==0) {
             system("cls");
+
+            cout << "1. Rejestracja" << endl;
+            cout << "2. Logowanie" << endl;
+            cout << "9. Zakoncz program" << endl;
+            wybor = getch();
+            if (wybor == '1') {
+                iloscUzytkownikow = rejestracja(iloscUzytkownikow);
+            } else if (wybor == '2') {
+
+                idZalogowanegoUzytkownika = logowanie(iloscUzytkownikow);
+                wczytajosobyzplikuKsiazkaAdresowa(idZalogowanegoUzytkownika);
+            } else if (wybor == '9') {
+                exit(0);
+            }
+        } else if ((idKontaktu == 0)&&(idZalogowanegoUzytkownika !=0)) {
+
+            system("cls");
+
+            cout << iloscznajomych<<endl;
+            cout << idZalogowanegoUzytkownika<<endl;
+
             cout << "1. Dodaj kontakt" << endl;
             cout << "2. Wyszukaj po imieniu" << endl;
             cout << "3. Wyszukaj po nazwisku" << endl;
@@ -464,12 +517,14 @@ int main() {
                 break;
 
             case '9':
+                znajomi.clear();
                 idZalogowanegoUzytkownika = 0;
+
                 break;
             }
         }
 
-        else if (idKontaktu != 0){
+        else if (idKontaktu != 0) {
             system("cls");
             cout << "Ktora dana chcesz zmienic: " << endl;
             cout << "1. Imie" << endl;
