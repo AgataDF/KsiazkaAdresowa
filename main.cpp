@@ -58,11 +58,11 @@ int idOstatniegoAdresata() {
     return ostatnieId;
 }
 
-void tworzeniePlikuTymczasowego ()
+void zamianaNazwyPlikow ()
 {
-    ifstream f1( "ksiazka_adresowa.txt" );
-    ofstream f2( "ksiazka_adresowa_temp.txt", ios::trunc );
-    f2 << f1.rdbuf();
+    ofstream f1( "ksiazka_adresowa.txt", ios::trunc );
+    ifstream f2( "ksiazka_adresowa_temp.txt");
+    f1 << f2.rdbuf();
 }
 
 void zapiszDoPlikuUzytkownicy () {
@@ -78,32 +78,138 @@ void zapiszDoPlikuUzytkownicy () {
         plik.close();
     }
 }
-void zapiszDoPlikuKsiazkaAdresowa () {
-
-    fstream plik;
-    plik.open ("ksiazka_adresowa.txt", ios::out|ios::trunc);
-
-    if (plik.good()) {
-        for (int i = 0; i < znajomi.size(); i++) {
-            plik << znajomi[i].idAdresata << "|";
-            plik << znajomi[i].idUzytkownika << "|";
-            plik << znajomi[i].imie << "|";
-            plik << znajomi[i].nazwisko << "|";
-            plik << znajomi[i].nrtelefonu << "|";
-            plik << znajomi[i].email << "|";
-            plik << znajomi[i].adres << "|" << endl;
-        }
-        plik.close();
-    }
-}
-
-
 void usunPlikTymczasowy () {
     if (remove ("ksiazka_adresowa_temp.txt") == 0 )
         cout << "Plik usuniety" << endl;
     else
         cout << "Wystapil blad podczas usuwania pliku" << endl;
 }
+
+
+void zapiszDoPlikuKsiazkaAdresowa () {
+
+    fstream plik1;
+    plik1.open ("ksiazka_adresowa.txt", ios::in);
+    fstream plik2;
+    plik2.open ("ksiazka_adresowa_temp.txt", ios::out|ios::trunc);
+    int i = 0;
+    int pomocIdAdresata, pomocIdUz, IdAdresata;
+    string pomocImie, pomocNazwisko, pomocNrTel, pomocEmail, pomocAdres;
+    int nrlinii = 1;
+    string linia;
+    char znak = '|';
+    while(getline(plik1, linia, znak)) {
+        switch(nrlinii) {
+        case 1:
+                pomocIdAdresata = atoi(linia.c_str());
+        case 2:
+            pomocIdUz = atoi(linia.c_str());
+            break;
+        case 3:
+            pomocImie = linia;
+            break;
+        case 4:
+            pomocNazwisko = linia;
+            break;
+        case 5:
+            pomocNrTel = linia;
+            break;
+        case 6:
+            pomocEmail = linia;
+            break;
+        case 7:
+            {
+            pomocAdres = linia;
+            IdAdresata = znajomi[i].idAdresata;
+            if ((pomocIdAdresata != IdAdresata)||(i > znajomi.size()))
+            {
+            plik2 << pomocIdAdresata << "|";
+            plik2 << pomocIdUz << "|";
+            plik2 << pomocImie << "|";
+            plik2 << pomocNazwisko << "|";
+            plik2 << pomocNrTel << "|";
+            plik2 << pomocEmail << "|";
+            plik2 << pomocAdres << "|" << endl;
+            }
+            else if (pomocIdAdresata == IdAdresata)
+            {
+            plik2 << znajomi[i].idAdresata << "|";
+            plik2 << znajomi[i].idUzytkownika << "|";
+            plik2 << znajomi[i].imie << "|";
+            plik2 << znajomi[i].nazwisko << "|";
+            plik2 << znajomi[i].nrtelefonu << "|";
+            plik2 << znajomi[i].email << "|";
+            plik2 << znajomi[i].adres << "|" << endl;
+            i++;
+            }
+            nrlinii = 0;
+            }
+        break;
+        }
+        nrlinii++;
+    }
+        plik1.close();
+        plik2.close();
+        zamianaNazwyPlikow();
+        usunPlikTymczasowy();
+    }
+
+void UsunZPlikuKsiazkaAdresowa (int numerId) {
+
+    fstream plik1;
+    plik1.open ("ksiazka_adresowa.txt", ios::in);
+    fstream plik2;
+    plik2.open ("ksiazka_adresowa_temp.txt", ios::out|ios::trunc);
+    int i = 0;
+    int pomocIdAdresata, pomocIdUz, IdAdresata;
+    string pomocImie, pomocNazwisko, pomocNrTel, pomocEmail, pomocAdres;
+    int nrlinii = 1;
+    string linia;
+    char znak = '|';
+    while(getline(plik1, linia, znak)) {
+        switch(nrlinii) {
+        case 1:
+            pomocIdAdresata = atoi(linia.c_str());
+        case 2:
+            pomocIdUz = atoi(linia.c_str());
+            break;
+        case 3:
+            pomocImie = linia;
+            break;
+        case 4:
+            pomocNazwisko = linia;
+            break;
+        case 5:
+            pomocNrTel = linia;
+            break;
+        case 6:
+            pomocEmail = linia;
+            break;
+        case 7:
+            {
+            pomocAdres = linia;
+            if ((pomocIdAdresata != numerId)||(i > znajomi.size()))
+            {
+            plik2 << pomocIdAdresata << "|";
+            plik2 << pomocIdUz << "|";
+            plik2 << pomocImie << "|";
+            plik2 << pomocNazwisko << "|";
+            plik2 << pomocNrTel << "|";
+            plik2 << pomocEmail << "|";
+            plik2 << pomocAdres << "|" << endl;
+            }
+
+            nrlinii = 0;
+            }
+        break;
+        }
+        nrlinii++;
+    }
+        plik1.close();
+        plik2.close();
+        zamianaNazwyPlikow();
+        usunPlikTymczasowy();
+    }
 
 int rejestracja (int iloscUzytkownikow) {
     Uzytkownik pomoc;
@@ -224,7 +330,6 @@ void wyswietlwszystkie (int idZalogowanegoUzytkownika) {
     getch();
 }
 
-
 void wczytajosobyzplikuUzytkownicy () {
     fstream plik;
     plik.open ("uzytkownicy.txt", ios::in);
@@ -256,37 +361,50 @@ void wczytajosobyzplikuKsiazkaAdresowa (int idZalogowanegoUzytkownika) {
     plik.open ("ksiazka_adresowa.txt", ios::in);
     int nrlinii = 1;
     string linia;
+    int pomocIdAdr, pomocIdUz;
+    string pomocIm, pomocNaz, pomocTel, pomocEm, pomocAdr;
     Znajomy pomoc;
     char znak = '|';
     while(getline(plik, linia, znak)) {
         switch(nrlinii) {
         case 1:
-            pomoc.idAdresata = atoi(linia.c_str());
+            pomocIdAdr = atoi(linia.c_str());
             break;
         case 2:
-            pomoc.idUzytkownika = atoi(linia.c_str());
-            if (pomoc.idUzytkownika != idZalogowanegoUzytkownika)
-                nrlinii=0;
+            pomocIdUz = atoi(linia.c_str());
             break;
         case 3:
-            pomoc.imie = linia;
+            pomocIm = linia;
             break;
         case 4:
-            pomoc.nazwisko = linia;
+            pomocNaz = linia;
             break;
         case 5:
-            pomoc.nrtelefonu = linia;
+            pomocTel = linia;
             break;
         case 6:
-            pomoc.email = linia;
+            pomocEm = linia;
             break;
         case 7: {
-            pomoc.adres = linia;
+            pomocAdr = linia;
+            if (pomocIdUz == idZalogowanegoUzytkownika)
+            {
+                pomoc.idAdresata = pomocIdAdr;
+                pomoc.idUzytkownika = pomocIdUz;
+                pomoc.imie = pomocIm;
+                pomoc.nazwisko = pomocNaz;
+                pomoc.nrtelefonu = pomocTel;
+                pomoc.email = pomocEm;
+                pomoc.adres = pomocAdr;
+                znajomi.push_back(pomoc);
+                nrlinii = 0;
+            }
+            else
             nrlinii = 0;
-            znajomi.push_back(pomoc);
         }
         break;
         }
+
         nrlinii++;
     }
     plik.close();
@@ -415,7 +533,7 @@ void usuniecieKontaktu (int numerId, int idZalogowanegoUzytkownika) {
             cin >> potwierdzenie;
             if (potwierdzenie == 't') {
                 znajomi.erase(itr);
-                zapiszDoPlikuKsiazkaAdresowa();
+                UsunZPlikuKsiazkaAdresowa(numerId);
                 cout << "Kontakt usuniety.";
                 break;
             }
@@ -429,7 +547,7 @@ int main() {
 
 
     wczytajosobyzplikuUzytkownicy();
-    tworzeniePlikuTymczasowego();
+    //tworzeniePlikuTymczasowego();
 
     int idZalogowanegoUzytkownika = 0;
     int iloscUzytkownikow = uzytkownicy.size();
